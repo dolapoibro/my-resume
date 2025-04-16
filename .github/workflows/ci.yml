@@ -1,31 +1,51 @@
 name: Resume CI Build
  
 on:
+
   push:
+
     branches: [ "main" ]
+
   pull_request:
+
     branches: [ "main" ]
  
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
  
     steps:
+
       - name: Checkout code
+
         uses: actions/checkout@v4
  
-      - name: Build the Docker image with tag (run number)
-        run: docker build . --file Dockerfile --tag my-image-name:${{ github.run_number }}
+      - name: Build the Docker image with run number tag
+
+        run: docker build . --file Dockerfile --tag myresume:${{ github.run_number }}
  
       - name: Build the Docker image with latest tag
-        run: docker build . --file Dockerfile --tag my-image-name:latest
+
+        run: docker build . --file Dockerfile --tag myresume:latest
  
       - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASS }}
+
+        run: echo "${{ secrets.REGISTRY_PASS }}" | docker login -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
  
       - name: Tag image with run number for Docker Hub
-        run: docker tag my-image-name:${{ github.run_number }} ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }}
+
+        run: docker tag myresume:${{ github.run_number }} dolapoibro/myresume:${{ github.run_number }}
+ 
+      - name: Tag image with latest for Docker Hub
+
+        run: docker tag myresume:latest dolapoibro/myresume:latest
  
       - name: Push tagged image to Docker Hub
-        run: docker push ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }}
-        
+
+        run: |
+
+          docker push dolapoibro/myresume:${{ github.run_number }}
+
+          docker push dolapoibro/myresume:latest
